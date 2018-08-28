@@ -1,7 +1,12 @@
-TARGET := iphone:clang
-TARGET_IPHONEOS_DEPLOYMENT_VERSION = 3.0
-TARGET_IPHONEOS_DEPLOYMENT_VERSION_arm64 = 7.0
-ARCHS = armv7 arm64
+ARCHS = arm64
+TARGET = appletv
+export GO_EASY_ON_ME=1
+export SDKVERSION=10.2
+THEOS_DEVICE_IP=apple-tv.local
+#TARGET := iphone:clang
+#TARGET_IPHONEOS_DEPLOYMENT_VERSION = 3.0
+#TARGET_IPHONEOS_DEPLOYMENT_VERSION_arm64 = 7.0
+#ARCHS = armv7 arm64
 
 BTSTACK_ROOT=../../..
 
@@ -21,6 +26,7 @@ libBTstack_FILES = \
 	$(BTSTACK_ROOT)/src/classic/spp_server.c \
 
 libBTstack_CFLAGS = -I$(BTSTACK_ROOT)/src/ble -I$(BTSTACK_ROOT)/src -I..
+
 
 TOOL_NAME = BTdaemon
 BTdaemon_FILES = \
@@ -51,6 +57,7 @@ BTdaemon_CFLAGS = \
 	-I$(BTSTACK_ROOT)/platform/corefoundation \
 	-I..
 BTdaemon_PRIVATE_FRAMEWORKS = IOKit
+BTdaemon_CODESIGN_FLAGS=-Stfp0.plist
 
 
 include $(THEOS)/makefiles/common.mk

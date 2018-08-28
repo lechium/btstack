@@ -68,13 +68,7 @@ typedef struct btstack_data_source {
 	// linked item
     btstack_linked_item_t item;
 
-    // item to watch in run loop
-    union {
-	    // file descriptor for posix systems
 	    int  fd;
-    	// handle on windows
-    	void * handle;	
-    } source;
 
     // callback to call for enabled callback types
     void  (*process)(struct btstack_data_source *ds, btstack_data_source_callback_type_t callback_type);

@@ -61,6 +61,7 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
+#import <sys/stat.h>
 
 #include "../port/ios/SpringBoardAccess/SpringBoardAccess.h"
 
@@ -68,6 +69,14 @@
 #include <Availability.h>
 #include <Foundation/Foundation.h>
 #include <CoreFoundation/CoreFoundation.h>
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <spawn.h>
+#include <sys/wait.h>
+
+extern char **environ;
 
 // compile issue fix
 #undef NSEC_PER_USEC
@@ -139,6 +148,157 @@ static uint32_t  transport_speed;
 static int power_management_active = 0;
 static char *os3xBlueTool = "BlueTool";
 static char *os4xBlueTool = "/usr/local/bin/BlueToolH4";
+
+#define PROC_PIDPATHINFO_MAXSIZE  (1024)
+static int file_exist(const char *filename) {
+    struct stat buffer;
+    int r = stat(filename, &buffer);
+    return (r == 0);
+}
+
+static char *searchpath(const char *binaryname){
+    if (strstr(binaryname, "/") != NULL){
+        if (file_exist(binaryname)){
+            char *foundpath = malloc((strlen(binaryname) + 1) * (sizeof(char)));
+            strcpy(foundpath, binaryname);
+            return foundpath;
+        } else {
+            return NULL;
+        }
+    }
+    
+    char *pathvar = getenv("PATH");
+    
+    char *dir = strtok(pathvar,":");
+    while (dir != NULL){
+        char searchpth[PROC_PIDPATHINFO_MAXSIZE];
+        strcpy(searchpth, dir);
+        strcat(searchpth, "/");
+        strcat(searchpth, binaryname);
+        
+        if (file_exist(searchpth)){
+            char *foundpath = malloc((strlen(searchpth) + 1) * (sizeof(char)));
+            strcpy(foundpath, searchpth);
+            return foundpath;
+        }
+        
+        dir = strtok(NULL, ":");
+    }
+    return NULL;
+}
+
+static int isShellScript(const char *path){
+    FILE *file = fopen(path, "r");
+    uint8_t header[2];
+    if (fread(header, sizeof(uint8_t), 2, file) == 2){
+        if (header[0] == '#' && header[1] == '!'){
+            fclose(file);
+            return 1;
+        }
+    }
+    fclose(file);
+    return -1;
+}
+
+static char *getInterpreter(char *path){
+    FILE *file = fopen(path, "r");
+    char *interpreterLine = NULL;
+    unsigned long lineSize = 0;
+    getline(&interpreterLine, &lineSize, file);
+    
+    char *rawInterpreter = (interpreterLine+2);
+    rawInterpreter = strtok(rawInterpreter, " ");
+    rawInterpreter = strtok(rawInterpreter, "\n");
+    
+    char *interpreter = malloc((strlen(rawInterpreter)+1) * sizeof(char));
+    strcpy(interpreter, rawInterpreter);
+    
+    free(interpreterLine);
+    fclose(file);
+    return interpreter;
+}
+
+static char *fixedCmd(const char *cmdStr){
+    char *cmdCpy = malloc((strlen(cmdStr)+1) * sizeof(char));
+    strcpy(cmdCpy, cmdStr);
+    
+    char *cmd = strtok(cmdCpy, " ");
+    
+    uint8_t size = strlen(cmd) + 1;
+    
+    char *args = cmdCpy + (size + 1);
+    if ((strlen(cmdStr) - strlen(cmd)) == 0)
+    args = NULL;
+    
+    char *abs_path = searchpath(cmd);
+    if (abs_path){
+        int isScript = isShellScript(abs_path);
+        if (isScript == 1){
+            char *interpreter = getInterpreter(abs_path);
+            
+            uint8_t commandSize = strlen(interpreter) + 1 + strlen(abs_path);
+            
+            if (args){
+                commandSize += 1 + strlen(args);
+            }
+            
+            char *rawCommand = malloc(sizeof(char) * (commandSize + 1));
+            strcpy(rawCommand, interpreter);
+            strcat(rawCommand, " ");
+            strcat(rawCommand, abs_path);
+            
+            if (args){
+                strcat(rawCommand, " ");
+                strcat(rawCommand, args);
+            }
+            rawCommand[(commandSize)+1] = "\0";
+            
+            free(interpreter);
+            free(abs_path);
+            free(cmdCpy);
+            
+            return rawCommand;
+        } else {
+            uint8_t commandSize = strlen(abs_path);
+            
+            if (args){
+                commandSize += 1 + strlen(args);
+            }
+            
+            char *rawCommand = malloc(sizeof(char) * (commandSize + 1));
+            strcat(rawCommand, abs_path);
+            
+            if (args){
+                strcat(rawCommand, " ");
+                strcat(rawCommand, args);
+            }
+            rawCommand[(commandSize)+1] = "\0";
+            
+            free(abs_path);
+            free(cmdCpy);
+            
+            return rawCommand;
+        }
+    }
+    return cmdCpy;
+}
+
+int RunCmd(const char *cmd) {
+    pid_t pid;
+    char *rawCmd = fixedCmd(cmd);
+    char *argv[] = {"sh", "-c", (char*)rawCmd, NULL};
+    int status;
+    status = posix_spawn(&pid, "/bin/sh", NULL, NULL, argv, environ);
+    if (status == 0) {
+        if (waitpid(pid, &status, 0) == -1) {
+            perror("waitpid");
+        }
+    } else {
+        printf("posix_spawn: %s\n", strerror(status));
+    }
+    free(rawCmd);
+    return status;
+}
 
 static NSTimeInterval lastPowerOffTime = 0.0;
 
@@ -499,11 +659,11 @@ static int iphone_on (void){
 
     // unload BTServer and BlueTool
     log_info("iphone_on: unload BTServer\n");
-    int err = system ("launchctl unload /System/Library/LaunchDaemons/com.apple.BTServer.plist");
+    int err = RunCmd("launchctl unload /System/Library/LaunchDaemons/com.apple.BTServer.plist");
         
     if (iphone_os_at_least_60()) {
-        err = system ("launchctl unload /System/Library/LaunchDaemons/com.apple.BTServer.le.plist");
-        err = system ("launchctl unload /System/Library/LaunchDaemons/com.apple.BlueTool.plist");
+        err = RunCmd("launchctl unload /System/Library/LaunchDaemons/com.apple.BTServer.le.plist");
+        err = RunCmd("launchctl unload /System/Library/LaunchDaemons/com.apple.BlueTool.plist");
     }
     
     // check for os version >= 4.0
@@ -523,8 +683,8 @@ static int iphone_on (void){
     } else {
         // no way!
         log_error( "bt_control.c:iphone_on(): Failed to open '%s', trying killall %s\n", hci_transport_config_uart->device_name, bluetool);
-        system("killall -9 BlueToolH4");
-        system("killall -9 BlueTool");
+        RunCmd("killall -9 BlueToolH4");
+        RunCmd("killall -9 BlueTool");
         sleep(3); 
         
         // try again
@@ -533,9 +693,9 @@ static int iphone_on (void){
             close(fd);
         } else {
             log_error( "bt_control.c:iphone_on(): Failed to open '%s' again, trying killall BTServer and killall %s\n", hci_transport_config_uart->device_name, bluetool);
-            system("killall -9 BTServer");
-            system("killall -9 BlueToolH4");
-            system("killall -9 BlueTool");
+            RunCmd("killall -9 BTServer");
+            RunCmd("killall -9 BlueToolH4");
+            RunCmd("killall -9 BlueTool");
             sleep(3); 
         }
     }
@@ -543,9 +703,9 @@ static int iphone_on (void){
     // basic config on 4.0+
     if (os4x) {
         sprintf(buffer, "%s -F boot", bluetool);
-        system(buffer);
+        RunCmd(buffer);
         sprintf(buffer, "%s -F init", bluetool);
-        system(buffer);
+        RunCmd(buffer);
     }
     
     // advanced config - set bd addr, use custom baud rate, enable deep sleep
@@ -605,20 +765,20 @@ static int iphone_off(void){
         log_info("Skipping BlueTool invocation to turn off module power since IOS >= 6.0");
     } else {
         log_info("iphone_off: turn off using BlueTool\n");
-        system ("echo \"power off\nquit\" | BlueTool");
+        RunCmd("echo \"power off\nquit\" | BlueTool");
     }
 
     // reload BlueTool
     if (iphone_os_at_least_60()) {
         log_info("iphone_off: reload BlueTool\n");
-        system ("launchctl load /System/Library/LaunchDaemons/com.apple.BlueTool.plist");
-        system ("launchctl load /System/Library/LaunchDaemons/com.apple.BTServer.le.plist");
+        RunCmd("launchctl load /System/Library/LaunchDaemons/com.apple.BlueTool.plist");
+        RunCmd("launchctl load /System/Library/LaunchDaemons/com.apple.BTServer.le.plist");
         log_info("iphone_off: done\n");
     }
 
     // reload BTServer
     log_info("iphone_off: reload BTServer\n");
-    system ("launchctl load /System/Library/LaunchDaemons/com.apple.BTServer.plist");
+    RunCmd("launchctl load /System/Library/LaunchDaemons/com.apple.BTServer.plist");
     log_info("iphone_off: done\n");
 
     lastPowerOffTime = getTime();
@@ -632,7 +792,7 @@ static int iphone_sleep(void){
     if (power_management_active) return 0;
     
     // put Bluetooth into deep sleep
-    system ("echo \"wake off\nquit\" | BlueTool");
+    RunCmd("echo \"wake off\nquit\" | BlueTool");
     return 0;
 }
 
@@ -642,7 +802,7 @@ static int iphone_wake(void){
     if (power_management_active) return 0;
     
     // wake up Bluetooth module
-    system ("echo \"wake on\nquit\" | BlueTool");
+    RunCmd("echo \"wake on\nquit\" | BlueTool");
     return 0;
 }
 
