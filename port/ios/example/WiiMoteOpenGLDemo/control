@@ -6,7 +6,7 @@ Description: BTstack Demo
  the behavior of a real one thanks to the open-source
  BTstack Bluetooth Stack. A WiiMote is needed!
 Section: Networking
-Architecture: iphoneos-arm
+Architecture: appletvos-arm64
 Homepage: http://code.google.com/p/btstack/
 Depends: ch.ringwald.btstack
 Maintainer: Matthias Ringwald <iphone@ringwald.ch>

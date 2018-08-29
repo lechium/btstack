@@ -166,7 +166,7 @@ static float addToHistory(int history[histSize], int value){
 				case HCI_EVENT_COMMAND_COMPLETE:
 					if ( HCI_EVENT_IS_COMMAND_COMPLETE(packet, hci_write_authentication_enable) ) {
                         // connect to device
-                        bt_send_cmd(&l2cap_create_channel, [device address], PSM_HID_CONTROL);
+                        bt_send_cmd(&l2cap_create_channel_cmd, [device address], PSM_HID_CONTROL);
 					}
 					break;
 
@@ -192,7 +192,7 @@ static float addToHistory(int history[histSize], int value){
 						if (psm == PSM_HID_CONTROL) {
 							// control channel openedn succesfully, now open interrupt channel, too.
                             hidControl = source_cid;
-							bt_send_cmd(&l2cap_create_channel, event_addr, PSM_HID_INTERRUPT);
+							bt_send_cmd(&l2cap_create_channel_cmd, event_addr, PSM_HID_INTERRUPT);
 						} else {
 							// request acceleration data.. 
                             hidInterrupt = source_cid;

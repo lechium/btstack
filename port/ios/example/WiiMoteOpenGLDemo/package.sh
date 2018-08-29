@@ -14,7 +14,7 @@ cp control $PACKAGE/DEBIAN
 echo "Version: $VERSION-$REVISION" >> $PACKAGE/DEBIAN/control
 
 mkdir -p $PACKAGE/Applications/
-cp -r build/Debug-iphoneos/WiiMoteOpenGLDemo.app $PACKAGE/Applications
+cp -r .theos/_/Applications/WiiMoteOpenGLDemo.app $PACKAGE/Applications
 export CODESIGN_ALLOCATE=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate
 ldid -S $PACKAGE/Applications/WiiMoteOpenGLDemo.app/WiiMoteOpenGLDemo
 
