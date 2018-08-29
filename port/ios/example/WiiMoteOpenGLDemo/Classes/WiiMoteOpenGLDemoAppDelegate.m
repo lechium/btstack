@@ -264,8 +264,12 @@ static float addToHistory(int history[histSize], int value){
 
 	navControl = [[UINavigationController alloc] initWithRootViewController:discoveryView];
 	window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-	[window addSubview:navControl.view];
-	[window makeKeyAndVisible];
+	//[window addSubview:navControl.view];
+    
+    NSLog(@"navControl: %@", navControl);
+    
+    self.window.rootViewController = navControl;
+    [window makeKeyAndVisible];
 
 	// BTstack
 	BTstackManager * bt = [BTstackManager sharedInstance];

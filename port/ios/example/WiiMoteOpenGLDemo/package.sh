@@ -11,7 +11,7 @@ sudo rm -rf $PACKAGE
 
 mkdir -p $PACKAGE/DEBIAN
 cp control $PACKAGE/DEBIAN
-echo "Version: $VERSION-$REVISION" >> $PACKAGE/DEBIAN/control
+#echo "Version: $VERSION-$REVISION" >> $PACKAGE/DEBIAN/control
 
 mkdir -p $PACKAGE/Applications/
 cp -r .theos/_/Applications/WiiMoteOpenGLDemo.app $PACKAGE/Applications

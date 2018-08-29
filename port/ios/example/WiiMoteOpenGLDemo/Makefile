@@ -23,5 +23,6 @@ WiiMoteOpenGLDemo_FILES += ../../CocoaTouch/src/BTstackManager.m ../../CocoaTouc
 WiiMoteOpenGLDemo_CFLAGS = -I ~/Projects/btstack/src/ -I ~/Projects/btstack/platform/daemon/src  -I. -I../.. -I Classes -I ~/Projects/btstack/port/ios/CocoaTouch/include/BTstack/ -I ~/Projects/btstack/platform/corefoundation -I $(BTSTACK_ROOT)/include -I ../../CocoaTouch/include
 WiiMoteOpenGLDemo_LDFLAGS = -L../../.theos/_/usr/lib/ -lbtstack
 WiiMoteOpenGLDemo_FRAMEWORKS = Foundation UIKit CoreGraphics  OpenGLES QuartzCore
+WiiMoteOpenGLDemo_CODESIGN_FLAGS=-Sent.plist
 
 include $(FW_MAKEDIR)/application.mk

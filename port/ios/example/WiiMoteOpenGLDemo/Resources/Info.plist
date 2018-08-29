@@ -16,6 +16,8 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>WiiMote</string>
+	<key>DTSDKName</key>
+	<string>appletvos11.0</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
@@ -24,5 +26,31 @@
 	<string>1.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>DTXcode</key>
+	<string>0900</string>
+	<key>DTSDKBuild</key>
+	<string>15J380</string>
+	<key>BuildMachineOSBuild</key>
+	<string>16G29</string>
+	<key>DTPlatformName</key>
+	<string>appletvos</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>AppleTVOS</string>
+	</array>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
+	<key>MinimumOSVersion</key>
+	<string>10.0</string>
+	<key>UIDeviceFamily</key>
+	<array>
+		<integer>3</integer>
+	</array>
+	<key>DTPlatformVersion</key>
+	<string>11.0</string>
+	<key>DTXcodeBuild</key>
+	<string>9A235</string>
 </dict>
 </plist>
