@@ -43,6 +43,10 @@
 #import "btstack.h"
 #import "btstack_run_loop.h"
 #import <btstack/hci_cmd.h>
+#import "btstack_client.h"
+
+//int bt_send_cmd(const hci_cmd_t *cmd, ...);
+//void bt_send_l2cap(uint16_t local_cid, uint8_t *data, uint16_t len);
 
 @interface UIDevice (privateAPI)
 -(BOOL) isWildcat;
@@ -160,14 +164,14 @@ static float addToHistory(int history[histSize], int value){
 			switch (hci_event_packet_get_type(packet)){
 
 				case HCI_EVENT_COMMAND_COMPLETE:
-					if ( COMMAND_COMPLETE_EVENT(packet, hci_write_authentication_enable) ) {
+					if ( HCI_EVENT_IS_COMMAND_COMPLETE(packet, hci_write_authentication_enable) ) {
                         // connect to device
                         bt_send_cmd(&l2cap_create_channel, [device address], PSM_HID_CONTROL);
 					}
 					break;
 
 				case HCI_EVENT_PIN_CODE_REQUEST:
-					bt_flip_addr(event_addr, &packet[2]);
+					reverse_bd_addr(event_addr, &packet[2]);
 					if (bd_addr_cmp([device address], event_addr)) break;
                     
 					// inform about pin code request
@@ -178,7 +182,7 @@ static float addToHistory(int history[histSize], int value){
 				case L2CAP_EVENT_CHANNEL_OPENED:
 					if (packet[2] == 0) {
 						// inform about new l2cap connection
-						bt_flip_addr(event_addr, &packet[3]);
+						reverse_bd_addr(event_addr, &packet[3]);
 						uint16_t psm = little_endian_read_16(packet, 11); 
 						uint16_t source_cid = little_endian_read_16(packet, 13); 
                         uint16_t dest_cid   = little_endian_read_16(packet, 15);

@@ -32,6 +32,7 @@
 #import <BTstack/BTstackManager.h>
 
 #import "btstack.h"
+#import "btstack_client.h"
 #import "btstack_run_loop.h"
 #import "btstack_run_loop_corefoundation.h"
 #import <btstack/BTDevice.h>
@@ -369,7 +370,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 
 - (void) handleRemoteNameCached: (uint8_t *) packet {
 	bd_addr_t addr;
-	bt_flip_addr(addr, &packet[3]);
+	reverse_bd_addr(addr, &packet[3]);
 	// NSLog(@"Get remote name done for %@", [BTDevice stringForAddress:addr]);
 	BTDevice* device = [self deviceForAddress:addr];
     if (!device) return;
@@ -380,7 +381,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 
 - (void) handleRemoteName: (uint8_t *) packet {
 	bd_addr_t addr;
-	bt_flip_addr(addr, &packet[3]);
+	reverse_bd_addr(addr, &packet[3]);
 	// NSLog(@"Get remote name done for %@", [BTDevice stringForAddress:addr]);
 	BTDevice* device = [self deviceForAddress:addr];
     if (!device) return;
@@ -403,7 +404,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 			break;
 			
 		case kW4InquiryMode:
-			if (hci_event_packet_get_type(packet) == HCI_EVENT_COMMAND_COMPLETE && COMMAND_COMPLETE_EVENT(packet, hci_write_inquiry_mode) ) {
+			if (hci_event_packet_get_type(packet) == HCI_EVENT_COMMAND_COMPLETE && HCI_EVENT_IS_COMMAND_COMPLETE(packet, hci_write_inquiry_mode) ) {
 				discoveryState = kInquiry;
 				bt_send_cmd(&hci_inquiry, HCI_INQUIRY_LAP, INQUIRY_INTERVAL, 0);
 				[self sendDiscoveryInquiry];
@@ -416,7 +417,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 				case HCI_EVENT_INQUIRY_RESULT:
 					numResponses = hci_event_inquiry_result_get_num_responses(packet);
 					for (i=0; i<numResponses ; i++){
-						bt_flip_addr(addr, &packet[3+i*6]);
+						reverse_bd_addr(addr, &packet[3+i*6]);
 						// NSLog(@"found %@", [BTDevice stringForAddress:addr]);
 						BTDevice* device = [self deviceForAddress:addr];
 						if (!device) {
@@ -437,7 +438,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 					numResponses = hci_event_inquiry_result_get_num_responses(packet);
 					int offset = 3;
 					for (i=0; i<numResponses ;i++){
-						bt_flip_addr(addr, &packet[offset]);
+						reverse_bd_addr(addr, &packet[offset]);
 						offset += 6;
 						// NSLog(@"found %@", [BTDevice stringForAddress:addr]);
 						BTDevice* device = [self deviceForAddress:addr];
@@ -478,7 +479,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 			break;
 
 		case kW4InquiryModeBeforeStop:
-			if (hci_event_packet_get_type(packet) == HCI_EVENT_COMMAND_COMPLETE && COMMAND_COMPLETE_EVENT(packet, hci_write_inquiry_mode) ) {
+			if (hci_event_packet_get_type(packet) == HCI_EVENT_COMMAND_COMPLETE && HCI_EVENT_IS_COMMAND_COMPLETE(packet, hci_write_inquiry_mode) ) {
 				discoveryState = kInactive;
 				[self sendDiscoveryStoppedEvent];
 			}
@@ -486,7 +487,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 			
 		case kW4InquiryStop:
 			if (hci_event_packet_get_type(packet) == HCI_EVENT_INQUIRY_COMPLETE
-			||	COMMAND_COMPLETE_EVENT(packet, hci_inquiry_cancel)) {
+			||	HCI_EVENT_IS_COMMAND_COMPLETE(packet, hci_inquiry_cancel)) {
 				discoveryState = kInactive;
 				[self sendDiscoveryStoppedEvent];
 			}
@@ -494,7 +495,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 			
 		case kW4RemoteNameBeforeStop:
 			if (hci_event_packet_get_type(packet) == HCI_EVENT_REMOTE_NAME_REQUEST_COMPLETE
-			||  COMMAND_COMPLETE_EVENT(packet, hci_remote_name_request_cancel)){
+			||  HCI_EVENT_IS_COMMAND_COMPLETE(packet, hci_remote_name_request_cancel)){
 				discoveryState = kInactive;
 				[self sendDiscoveryStoppedEvent];
 			}
