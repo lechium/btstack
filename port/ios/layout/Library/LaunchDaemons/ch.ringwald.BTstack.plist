@@ -25,7 +25,7 @@
 			<key>SockType</key>
 			<string>Stream</string>
 			<key>SockPathName</key>
-			<string>/Library/.BTstack</string>
+			<string>/tmp/BTstack</string>
 			<key>SockPathMode</key>
 			<integer>438</integer>
 		</dict>
