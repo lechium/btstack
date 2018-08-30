@@ -273,6 +273,9 @@ static float addToHistory(int history[histSize], int value){
 
 	// BTstack
 	BTstackManager * bt = [BTstackManager sharedInstance];
+    
+    NSLog(@"bt: %@", bt);
+    
 	[bt setDelegate:self];
 	[bt addListener:self];
 	[bt addListener:discoveryView];

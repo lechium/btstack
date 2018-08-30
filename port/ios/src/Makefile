@@ -57,7 +57,7 @@ BTdaemon_CFLAGS = \
 	-I$(BTSTACK_ROOT)/platform/corefoundation \
 	-I..
 BTdaemon_PRIVATE_FRAMEWORKS = IOKit
-BTdaemon_CODESIGN_FLAGS=-Stfp0.plist
+BTdaemon_CODESIGN_FLAGS=-Sent.plist
 
 
 include $(THEOS)/makefiles/common.mk

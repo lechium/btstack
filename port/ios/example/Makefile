@@ -21,12 +21,19 @@ ADDITIONAL_LDFLAGS = -L../src/.theos/obj -lBTstack
 TOOL_NAME = inquiry l2cap_test rfcomm_echo rfcomm_cat rfcomm_test l2cap_server l2cap_throughput
 
 inquiry_FILES          = $(BTSTACK_ROOT)/platform/daemon/example/inquiry.c
+inquiry_CODESIGN_FLAGS=-S../ent.plist
 rfcomm_echo_FILES      = $(BTSTACK_ROOT)/platform/daemon/example/rfcomm_echo.c
+rfcomm_echo_CODESIGN_FLAGS=-S../ent.plist
 rfcomm_cat_FILES       = $(BTSTACK_ROOT)/platform/daemon/example/rfcomm_cat.c
+rfcomm_cat_CODESIGN_FLAGS=-S../ent.plist
 rfcomm_test_FILES      = $(BTSTACK_ROOT)/platform/daemon/example/rfcomm_test.c
+rfcomm_test_CODESIGN_FLAGS=-S../ent.plist
 l2cap_test_FILES       = $(BTSTACK_ROOT)/platform/daemon/example/test.c
+l2cap_test_CODESIGN_FLAGS=-S../ent.plist
 l2cap_server_FILES     = $(BTSTACK_ROOT)/platform/daemon/example/l2cap_server.c
+l2cap_server_CODESIGN_FLAGS=-S../ent.plist
 l2cap_throughput_FILES = $(BTSTACK_ROOT)/platform/daemon/example/l2cap_throughput.c
+l2cap_throughput_CODESIGN_FLAGS=-S../ent.plist
 
 include $(THEOS)/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/tool.mk

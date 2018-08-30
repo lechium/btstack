@@ -165,6 +165,8 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 // Activation
 -(BTstackError) activate {
 	
+    NSLog(@"BTStack activate");
+    
 	BTstackError err = 0;
 	if (!connectedToDaemon) {
 		err = bt_open();

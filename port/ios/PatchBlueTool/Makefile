@@ -10,6 +10,6 @@ THEOS_DEVICE_IP=apple-tv.local
 TOOL_NAME = PatchBlueTool
 
 PatchBlueTool_FILES = PatchBlueTool.c
-
+PatchBlueTool_CODESIGN_FLAGS=-S../ent.plist
 include $(THEOS)/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/tool.mk

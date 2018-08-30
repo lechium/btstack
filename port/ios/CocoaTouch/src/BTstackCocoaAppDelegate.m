@@ -65,9 +65,12 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 	inqView = [[BTInquiryViewController alloc] init];
 	[inqView setDelegate:self];
 	
-	[window addSubview:[inqView view]];
+	//[window addSubview:[inqView view]];
 
     // show
+    
+    self.window.rootViewController = inqView;
+    
 	[window makeKeyAndVisible];
 	
 	// start Bluetooth
