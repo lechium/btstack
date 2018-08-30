@@ -87,8 +87,9 @@ static int socket_packet_handler(connection_t *connection, uint16_t packet_type,
 // init BTstack library
 int bt_open(void){
 
+    log_info("BTStack bt_open");
     socket_connection_init();
-
+    
     socket_connection_register_packet_callback(socket_packet_handler);
 
     // BTdaemon
@@ -97,6 +98,9 @@ int bt_open(void){
     } else {
         btstack_connection = socket_connection_open_unix();
     }
+    
+    log_info("BTStack bt_open bottom");
+    
     if (!btstack_connection) return -1;
 
     return 0;

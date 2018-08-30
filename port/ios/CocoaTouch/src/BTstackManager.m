@@ -166,18 +166,20 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 -(BTstackError) activate {
 	
     NSLog(@"BTStack activate");
-    
+    NSLog(@"BTStack activate2");
 	BTstackError err = 0;
 	if (!connectedToDaemon) {
+        NSLog(@"before bt_open");
 		err = bt_open();
+        NSLog(@"after bt_open");
 		if (err) return BTSTACK_CONNECTION_TO_BTDAEMON_FAILED;
 	}
 	connectedToDaemon = YES;
-	
+	NSLog(@"after connectedToDaemon");
 	// check system BT
 	state = kW4SysBTState;
 	bt_send_cmd(&btstack_get_system_bluetooth_enabled);
-	
+	NSLog(@"after state");
 	return err;
 }
 

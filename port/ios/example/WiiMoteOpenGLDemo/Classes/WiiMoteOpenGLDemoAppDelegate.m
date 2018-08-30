@@ -273,7 +273,7 @@ static float addToHistory(int history[histSize], int value){
 
 	// BTstack
 	BTstackManager * bt = [BTstackManager sharedInstance];
-    
+    NSLog(@"weoutchea");
     NSLog(@"bt: %@", bt);
     
 	[bt setDelegate:self];
@@ -282,6 +282,9 @@ static float addToHistory(int history[histSize], int value){
 
 	BTstackError err = [bt activate];
 	if (err) NSLog(@"activate err 0x%02x!", err);
+    
+    NSLog(@"no activate error?");
+    
 }
 
 // new
